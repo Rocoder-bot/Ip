@@ -1,0 +1,46 @@
+const express = require('express');
+const axios = require('axios');
+const bodyParser = require('body-parser');
+
+const app = express();
+const port = 3000;
+
+// Replace with your Telegram Bot Token and Chat ID
+const TELEGRAM_BOT_TOKEN = '7105419671:AAGIZ1ZuB8l4V600fidOJ1iCa__4_8OAXm4';
+const TELEGRAM_CHAT_ID = '-1002436954080';
+
+// Middleware
+app.use(bodyParser.json());
+
+// Function to send the IP to the Telegram bot
+async function sendIPToTelegram(ipAddress) {
+  const message = `New IP Address Captured: ${ipAddress}`;
+  const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+  try {
+    await axios.post(telegramUrl, {
+      chat_id: TELEGRAM_CHAT_ID,
+      text: message,
+    });
+    console.log(`IP Address sent to Telegram: ${ipAddress}`);
+  } catch (error) {
+    console.error('Error sending IP to Telegram:', error);
+  }
+}
+
+// Route to capture IP and send to Telegram
+app.get('/', (req, res) => {
+  const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log(`IP Address captured: ${ipAddress}`);
+
+  // Send IP to Telegram bot
+  sendIPToTelegram(ipAddress);
+
+  // Respond to the user with their IP address
+  res.send(`Your IP Address: ${ipAddress}`);
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
